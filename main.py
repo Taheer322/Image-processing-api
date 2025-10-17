@@ -1,14 +1,14 @@
 """
-Image Processing API - FastAPI Application
-Smart image analyzer with quality assessment and enhancement
+Smart Image Processing API - Enhanced with Transformations
+Quality analysis + Image transformations (resize, crop, filters)
 """
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 import io
 import uuid
 from datetime import datetime
@@ -21,17 +21,17 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Smart Image Processing API",
-    description="Analyze and enhance images with quality metrics",
-    version="1.0.0"
+    description="Analyze, enhance, and transform images with quality metrics",
+    version="2.0.0"
 )
 
-# Add CORS middleware to allow requests from browser
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Create uploads directory
@@ -56,7 +56,6 @@ class ImageAnalyzer:
         """Calculate blur detection score (0-100)"""
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        # Normalize to 0-100 scale
         blur_score = min(100, (laplacian_var / 500) * 100)
         return round(blur_score, 2)
     
@@ -87,15 +86,12 @@ class ImageAnalyzer:
         """Auto-enhance image quality"""
         pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         
-        # Enhance contrast
         enhancer = ImageEnhance.Contrast(pil_image)
         pil_image = enhancer.enhance(1.3)
         
-        # Enhance brightness
         enhancer = ImageEnhance.Brightness(pil_image)
         pil_image = enhancer.enhance(1.1)
         
-        # Enhance sharpness
         enhancer = ImageEnhance.Sharpness(pil_image)
         pil_image = enhancer.enhance(1.2)
         
@@ -114,6 +110,85 @@ class ImageAnalyzer:
             return "Fair"
         else:
             return "Poor"
+    
+    # ==================== NEW TRANSFORMATION METHODS ====================
+    
+    @staticmethod
+    def resize_image(image: np.ndarray, width: int, height: int) -> np.ndarray:
+        """Resize image to specified dimensions"""
+        if width <= 0 or height <= 0:
+            raise ValueError("Width and height must be positive")
+        resized = cv2.resize(image, (width, height))
+        return resized
+    
+    @staticmethod
+    def resize_by_percentage(image: np.ndarray, percentage: int) -> np.ndarray:
+        """Resize image by percentage (50 = 50% of original)"""
+        if percentage <= 0 or percentage > 500:
+            raise ValueError("Percentage must be between 1 and 500")
+        height, width = image.shape[:2]
+        new_width = int(width * percentage / 100)
+        new_height = int(height * percentage / 100)
+        resized = cv2.resize(image, (new_width, new_height))
+        return resized
+    
+    @staticmethod
+    def crop_image(image: np.ndarray, x: int, y: int, width: int, height: int) -> np.ndarray:
+        """Crop image from position (x,y) with specified dimensions"""
+        img_height, img_width = image.shape[:2]
+        
+        if x < 0 or y < 0 or width <= 0 or height <= 0:
+            raise ValueError("Invalid crop parameters")
+        
+        if x + width > img_width or y + height > img_height:
+            raise ValueError("Crop area exceeds image boundaries")
+        
+        cropped = image[y:y+height, x:x+width]
+        return cropped
+    
+    @staticmethod
+    def apply_filter(image: np.ndarray, filter_type: str) -> np.ndarray:
+        """Apply various filters to image"""
+        pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        
+        if filter_type == "blur":
+            filtered = pil_image.filter(ImageFilter.BLUR)
+        elif filter_type == "sharpen":
+            filtered = pil_image.filter(ImageFilter.SHARPEN)
+        elif filter_type == "edge":
+            filtered = pil_image.filter(ImageFilter.FIND_EDGES)
+        elif filter_type == "smooth":
+            filtered = pil_image.filter(ImageFilter.SMOOTH)
+        elif filter_type == "grayscale":
+            filtered = pil_image.convert('L').convert('RGB')
+        elif filter_type == "sepia":
+            filtered = ImageEnhance.Color(pil_image).enhance(0)
+            filtered = ImageEnhance.Brightness(filtered).enhance(0.8)
+        else:
+            raise ValueError(f"Unknown filter: {filter_type}")
+        
+        result = cv2.cvtColor(np.array(filtered), cv2.COLOR_RGB2BGR)
+        return result
+    
+    @staticmethod
+    def rotate_image(image: np.ndarray, angle: float) -> np.ndarray:
+        """Rotate image by specified angle (degrees)"""
+        height, width = image.shape[:2]
+        center = (width // 2, height // 2)
+        matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated = cv2.warpAffine(image, matrix, (width, height))
+        return rotated
+    
+    @staticmethod
+    def flip_image(image: np.ndarray, direction: str) -> np.ndarray:
+        """Flip image horizontally or vertically"""
+        if direction == "horizontal":
+            flipped = cv2.flip(image, 1)
+        elif direction == "vertical":
+            flipped = cv2.flip(image, 0)
+        else:
+            raise ValueError("Direction must be 'horizontal' or 'vertical'")
+        return flipped
 
 
 def generate_recommendations(blur: float, brightness: float, contrast: float) -> list:
@@ -136,15 +211,26 @@ def generate_recommendations(blur: float, brightness: float, contrast: float) ->
 async def root():
     """API health check"""
     return {
-        "message": "Smart Image Processing API",
-        "version": "1.0.0",
-        "endpoints": [
-            "/analyze - Analyze image quality",
-            "/enhance - Enhance and analyze image",
-            "/batch-analyze - Analyze multiple images"
-        ]
+        "message": "Smart Image Processing API v2.0",
+        "version": "2.0.0",
+        "endpoints": {
+            "Analysis": [
+                "/analyze - Analyze image quality",
+                "/enhance - Enhance and analyze image",
+                "/batch-analyze - Analyze multiple images"
+            ],
+            "Transformations": [
+                "/resize - Resize image",
+                "/crop - Crop image",
+                "/filter - Apply filters (blur, sharpen, edge, smooth, grayscale, sepia)",
+                "/rotate - Rotate image",
+                "/flip - Flip image"
+            ]
+        }
     }
 
+
+# ==================== ANALYSIS ENDPOINTS ====================
 
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
@@ -162,6 +248,11 @@ async def analyze_image(file: UploadFile = File(...)):
         return {
             "filename": file.filename,
             "timestamp": datetime.now().isoformat(),
+            "image_info": {
+                "width": image.shape[1],
+                "height": image.shape[0],
+                "size_kb": len(content) / 1024
+            },
             "analysis": {
                 "blur_score": blur_score,
                 "brightness": brightness,
@@ -186,20 +277,16 @@ async def enhance_image_endpoint(file: UploadFile = File(...)):
         content = await file.read()
         image = ImageAnalyzer.read_image(content)
         
-        # Original analysis
         original_blur = ImageAnalyzer.calculate_blur_score(image)
         original_brightness = ImageAnalyzer.calculate_brightness(image)
         original_contrast = ImageAnalyzer.calculate_contrast(image)
         
-        # Enhance image
         enhanced_image = ImageAnalyzer.enhance_image(image)
         
-        # Enhanced analysis
         enhanced_blur = ImageAnalyzer.calculate_blur_score(enhanced_image)
         enhanced_brightness = ImageAnalyzer.calculate_brightness(enhanced_image)
         enhanced_contrast = ImageAnalyzer.calculate_contrast(enhanced_image)
         
-        # Save enhanced image
         file_id = str(uuid.uuid4())
         output_path = UPLOAD_DIR / f"{file_id}_enhanced.jpg"
         cv2.imwrite(str(output_path), enhanced_image)
@@ -271,6 +358,189 @@ async def batch_analyze(files: list[UploadFile] = File(...)):
     }
 
 
+# ==================== TRANSFORMATION ENDPOINTS ====================
+
+@app.post("/resize")
+async def resize_image(
+    file: UploadFile = File(...),
+    width: int = Query(None),
+    height: int = Query(None),
+    percentage: int = Query(None)
+):
+    """Resize image - provide either (width, height) or percentage"""
+    try:
+        if percentage and (width or height):
+            raise ValueError("Provide either percentage OR (width, height), not both")
+        
+        if not percentage and (not width or not height):
+            raise ValueError("Provide either percentage OR both width and height")
+        
+        content = await file.read()
+        image = ImageAnalyzer.read_image(content)
+        
+        if percentage:
+            resized = ImageAnalyzer.resize_by_percentage(image, percentage)
+            new_width, new_height = resized.shape[1], resized.shape[0]
+        else:
+            resized = ImageAnalyzer.resize_image(image, width, height)
+            new_width, new_height = width, height
+        
+        file_id = str(uuid.uuid4())
+        output_path = UPLOAD_DIR / f"{file_id}_resized.jpg"
+        cv2.imwrite(str(output_path), resized)
+        
+        return {
+            "filename": file.filename,
+            "timestamp": datetime.now().isoformat(),
+            "original_size": {"width": image.shape[1], "height": image.shape[0]},
+            "new_size": {"width": new_width, "height": new_height},
+            "transformation": "resize",
+            "download_url": f"/download/{file_id}_resized.jpg"
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Resize error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image resize failed")
+
+
+@app.post("/crop")
+async def crop_image(
+    file: UploadFile = File(...),
+    x: int = Query(...),
+    y: int = Query(...),
+    width: int = Query(...),
+    height: int = Query(...)
+):
+    """Crop image from position (x,y) with specified dimensions"""
+    try:
+        content = await file.read()
+        image = ImageAnalyzer.read_image(content)
+        cropped = ImageAnalyzer.crop_image(image, x, y, width, height)
+        
+        file_id = str(uuid.uuid4())
+        output_path = UPLOAD_DIR / f"{file_id}_cropped.jpg"
+        cv2.imwrite(str(output_path), cropped)
+        
+        return {
+            "filename": file.filename,
+            "timestamp": datetime.now().isoformat(),
+            "original_size": {"width": image.shape[1], "height": image.shape[0]},
+            "crop_region": {"x": x, "y": y, "width": width, "height": height},
+            "cropped_size": {"width": cropped.shape[1], "height": cropped.shape[0]},
+            "transformation": "crop",
+            "download_url": f"/download/{file_id}_cropped.jpg"
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Crop error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image crop failed")
+
+
+@app.post("/filter")
+async def apply_filter(
+    file: UploadFile = File(...),
+    filter_type: str = Query(...)
+):
+    """Apply filter to image: blur, sharpen, edge, smooth, grayscale, sepia"""
+    try:
+        valid_filters = ["blur", "sharpen", "edge", "smooth", "grayscale", "sepia"]
+        if filter_type not in valid_filters:
+            raise ValueError(f"Filter must be one of: {', '.join(valid_filters)}")
+        
+        content = await file.read()
+        image = ImageAnalyzer.read_image(content)
+        filtered = ImageAnalyzer.apply_filter(image, filter_type)
+        
+        file_id = str(uuid.uuid4())
+        output_path = UPLOAD_DIR / f"{file_id}_{filter_type}.jpg"
+        cv2.imwrite(str(output_path), filtered)
+        
+        return {
+            "filename": file.filename,
+            "timestamp": datetime.now().isoformat(),
+            "filter_applied": filter_type,
+            "available_filters": ["blur", "sharpen", "edge", "smooth", "grayscale", "sepia"],
+            "transformation": "filter",
+            "download_url": f"/download/{file_id}_{filter_type}.jpg"
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Filter error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Filter application failed")
+
+
+@app.post("/rotate")
+async def rotate_image(
+    file: UploadFile = File(...),
+    angle: float = Query(...)
+):
+    """Rotate image by specified angle (degrees)"""
+    try:
+        if angle < -360 or angle > 360:
+            raise ValueError("Angle must be between -360 and 360")
+        
+        content = await file.read()
+        image = ImageAnalyzer.read_image(content)
+        rotated = ImageAnalyzer.rotate_image(image, angle)
+        
+        file_id = str(uuid.uuid4())
+        output_path = UPLOAD_DIR / f"{file_id}_rotated.jpg"
+        cv2.imwrite(str(output_path), rotated)
+        
+        return {
+            "filename": file.filename,
+            "timestamp": datetime.now().isoformat(),
+            "rotation_angle": angle,
+            "transformation": "rotate",
+            "download_url": f"/download/{file_id}_rotated.jpg"
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Rotate error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image rotation failed")
+
+
+@app.post("/flip")
+async def flip_image(
+    file: UploadFile = File(...),
+    direction: str = Query(...)
+):
+    """Flip image horizontally or vertically"""
+    try:
+        if direction not in ["horizontal", "vertical"]:
+            raise ValueError("Direction must be 'horizontal' or 'vertical'")
+        
+        content = await file.read()
+        image = ImageAnalyzer.read_image(content)
+        flipped = ImageAnalyzer.flip_image(image, direction)
+        
+        file_id = str(uuid.uuid4())
+        output_path = UPLOAD_DIR / f"{file_id}_flipped_{direction}.jpg"
+        cv2.imwrite(str(output_path), flipped)
+        
+        return {
+            "filename": file.filename,
+            "timestamp": datetime.now().isoformat(),
+            "flip_direction": direction,
+            "transformation": "flip",
+            "download_url": f"/download/{file_id}_flipped_{direction}.jpg"
+        }
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Flip error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image flip failed")
+
+
 @app.get("/download/{file_id}")
 async def download_file(file_id: str):
     """Download processed image"""
@@ -283,3 +553,5 @@ async def download_file(file_id: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+ 

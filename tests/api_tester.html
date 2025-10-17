@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processing API - Tester</title>
+    <title>Image Processing API  </title>
     <style>
         * {
             margin: 0;
@@ -13,13 +13,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -30,108 +30,227 @@
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
         }
 
         .version {
-            font-size: 0.9em;
-            opacity: 0.9;
+            font-size: 1.1em;
+            opacity: 0.95;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
         }
 
         .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            padding: 28px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 18px 45px rgba(0,0,0,0.25);
+        }
+
+        .card.analyze {
+            border-top: 5px solid #667eea;
+        }
+
+        .card.enhance {
+            border-top: 5px solid #f093fb;
+        }
+
+        .card.resize {
+            border-top: 5px solid #4facfe;
+        }
+
+        .card.crop {
+            border-top: 5px solid #00f2fe;
+        }
+
+        .card.filter {
+            border-top: 5px solid #43e97b;
+        }
+
+        .card.rotate {
+            border-top: 5px solid #fa709a;
+        }
+
+        .card.flip {
+            border-top: 5px solid #ffa751;
         }
 
         .card h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+            font-size: 1.6em;
+            font-weight: 800;
+        }
+
+        .card.analyze h2 { color: #667eea; }
+        .card.enhance h2 { color: #f093fb; }
+        .card.resize h2 { color: #4facfe; }
+        .card.crop h2 { color: #00f2fe; }
+        .card.filter h2 { color: #43e97b; }
+        .card.rotate h2 { color: #fa709a; }
+        .card.flip h2 { color: #ffa751; }
+
+        .card p {
+            color: #555;
+            margin-bottom: 18px;
+            font-size: 0.95em;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             color: #333;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 0.95em;
         }
 
         input[type="file"],
+        input[type="number"],
+        input[type="range"],
         select {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s ease;
         }
 
         input[type="file"]:focus,
+        input[type="number"]:focus,
+        input[type="range"]:focus,
         select:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1em;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         button:hover {
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         button:active {
-            transform: scale(0.98);
+            transform: translateY(0);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+            margin-top: 15px !important;
+            font-size: 1.05em;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4) !important;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #38f9d7 0%, #43e97b 100%) !important;
+            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.6) !important;
         }
 
         .loading {
             display: none;
             text-align: center;
             color: #667eea;
-            margin: 15px 0;
+            margin: 16px 0;
+            font-weight: 600;
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
             display: inline-block;
-            margin-right: 10px;
+            margin-right: 12px;
         }
 
         @keyframes spin {
@@ -140,12 +259,13 @@
         }
 
         .response {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
+            margin-top: 18px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
             display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .response.show {
@@ -165,89 +285,79 @@
         }
 
         .response-title {
-            font-weight: 600;
+            font-weight: 800;
             color: #667eea;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 1.1em;
         }
 
         .response-content {
             background: white;
-            padding: 12px;
-            border-radius: 5px;
+            padding: 14px;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
             overflow-x: auto;
             color: #333;
             white-space: pre-wrap;
             word-wrap: break-word;
-        }
-
-        .metric {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .metric-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .metric-label {
-            font-size: 0.8em;
-            opacity: 0.9;
-        }
-
-        .metric-value {
-            font-size: 1.5em;
-            font-weight: 600;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .error {
-            background-color: #fee;
-            border-left-color: #f00;
-            color: #c00;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%) !important;
+            border-left-color: #d63031 !important;
+        }
+
+        .error .response-content {
+            background: #ffebee;
+            color: #c62828;
         }
 
         .success {
-            background-color: #efe;
-            border-left-color: #0f0;
-            color: #0a0;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+            border-left-color: #00b894 !important;
         }
 
-        .full-width {
-            grid-column: 1 / -1;
+        .success .response-content {
+            background: #f1f8f4;
+            color: #0a5c3e;
         }
 
         .info-box {
-            background: #e3f2fd;
-            border-left: 4px solid #2196F3;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            color: #1565c0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-left: 5px solid #ffd700;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .image-preview {
-            margin-top: 15px;
-            text-align: center;
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
-        .image-preview img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        .input-row input {
+            width: 100%;
         }
 
         @media (max-width: 768px) {
-            .main-grid {
+            .input-row {
                 grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .tabs {
+                justify-content: center;
             }
         }
     </style>
@@ -255,78 +365,247 @@
 <body>
     <div class="container">
         <header>
-            <h1>🖼️ Image Processing API Tester</h1>
-            <p class="version">Smart Image Analysis & Enhancement</p>
+            <h1>Image Processing API</h1>
+            <p class="version">Analysis + Transformations</p>
         </header>
 
         <div class="info-box">
-            ⚠️ Make sure your API is running: <strong>python -m uvicorn main:app --reload</strong>
+            Make sure your API is running: python -m uvicorn main:app --reload
         </div>
 
-        <div class="main-grid">
-            <!-- Analyze Card -->
-            <div class="card">
-                <h2>📊 Analyze Image</h2>
-                <p style="color: #666; margin-bottom: 15px;">Analyze image quality without modification</p>
-                
-                <div class="form-group">
-                    <label for="analyzeFile">Select Image:</label>
-                    <input type="file" id="analyzeFile" accept="image/*">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('analysis')">Analysis</button>
+            <button class="tab-button" onclick="switchTab('transformations')">Transformations</button>
+            <button class="tab-button" onclick="switchTab('batch')">Batch</button>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content active">
+            <div class="main-grid">
+                <div class="card analyze">
+                    <h2>Analyze</h2>
+                    <p>Get quality metrics</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="analyzeFile" accept="image/*">
+                    </div>
+
+                    <button onclick="analyzeImage()">Analyze</button>
+
+                    <div class="loading" id="analyzingLoading">
+                        <div class="spinner"></div> Analyzing...
+                    </div>
+
+                    <div class="response" id="analyzeResponse">
+                        <div class="response-title">Analysis Results</div>
+                        <div id="analyzeContent" class="response-content"></div>
+                    </div>
                 </div>
 
-                <button onclick="analyzeImage()">🔍 Analyze</button>
+                <div class="card enhance">
+                    <h2>Enhance</h2>
+                    <p>Auto-enhance quality</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="enhanceFile" accept="image/*">
+                    </div>
 
-                <div class="loading" id="analyzingLoading">
-                    <div class="spinner"></div> Analyzing...
-                </div>
+                    <button onclick="enhanceImage()">Enhance</button>
 
-                <div class="response" id="analyzeResponse">
-                    <div class="response-title">Analysis Results</div>
-                    <div id="analyzeContent" class="response-content"></div>
+                    <div class="loading" id="enhancingLoading">
+                        <div class="spinner"></div> Enhancing...
+                    </div>
+
+                    <div class="response" id="enhanceResponse">
+                        <div class="response-title">Enhancement Results</div>
+                        <div id="enhanceContent" class="response-content"></div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Enhance Card -->
-            <div class="card">
-                <h2>✨ Enhance Image</h2>
-                <p style="color: #666; margin-bottom: 15px;">Enhance and save improved image</p>
-                
-                <div class="form-group">
-                    <label for="enhanceFile">Select Image:</label>
-                    <input type="file" id="enhanceFile" accept="image/*">
+        <!-- Transformations Tab -->
+        <div id="transformations" class="tab-content">
+            <div class="main-grid">
+                <div class="card resize">
+                    <h2>Resize</h2>
+                    <p>Resize by dimensions or %</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="resizeFile" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label><input type="radio" name="resize-mode" value="fixed" checked> Fixed</label>
+                        <div class="input-row" id="fixed-inputs">
+                            <input type="number" id="resizeWidth" placeholder="Width" value="800">
+                            <input type="number" id="resizeHeight" placeholder="Height" value="600">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><input type="radio" name="resize-mode" value="percentage"> Percentage</label>
+                        <input type="number" id="resizePercentage" placeholder="%" value="50" style="display:none;">
+                    </div>
+
+                    <button onclick="resizeImage()">Resize</button>
+
+                    <div class="loading" id="resizingLoading">
+                        <div class="spinner"></div> Resizing...
+                    </div>
+
+                    <div class="response" id="resizeResponse">
+                        <div class="response-title">Resize Results</div>
+                        <div id="resizeContent" class="response-content"></div>
+                    </div>
                 </div>
 
-                <button onclick="enhanceImage()">🎨 Enhance</button>
+                <div class="card crop">
+                    <h2>Crop</h2>
+                    <p>Extract region</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="cropFile" accept="image/*">
+                    </div>
 
-                <div class="loading" id="enhancingLoading">
-                    <div class="spinner"></div> Enhancing...
+                    <div class="input-row">
+                        <input type="number" id="cropX" placeholder="X" value="10">
+                        <input type="number" id="cropY" placeholder="Y" value="10">
+                    </div>
+
+                    <div class="input-row">
+                        <input type="number" id="cropWidth" placeholder="Width" value="200">
+                        <input type="number" id="cropHeight" placeholder="Height" value="200">
+                    </div>
+
+                    <button onclick="cropImage()">Crop</button>
+
+                    <div class="loading" id="croppingLoading">
+                        <div class="spinner"></div> Cropping...
+                    </div>
+
+                    <div class="response" id="cropResponse">
+                        <div class="response-title">Crop Results</div>
+                        <div id="cropContent" class="response-content"></div>
+                    </div>
                 </div>
 
-                <div class="response" id="enhanceResponse">
-                    <div class="response-title">Enhancement Results</div>
-                    <div id="enhanceContent" class="response-content"></div>
+                <div class="card filter">
+                    <h2>Filter</h2>
+                    <p>Apply effects</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="filterFile" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Choose Filter:</label>
+                        <select id="filterType">
+                            <option value="blur">Blur</option>
+                            <option value="sharpen">Sharpen</option>
+                            <option value="edge">Edge Detection</option>
+                            <option value="smooth">Smooth</option>
+                            <option value="grayscale">Grayscale</option>
+                            <option value="sepia">Sepia</option>
+                        </select>
+                    </div>
+
+                    <button onclick="applyFilter()">Apply</button>
+
+                    <div class="loading" id="filteringLoading">
+                        <div class="spinner"></div> Processing...
+                    </div>
+
+                    <div class="response" id="filterResponse">
+                        <div class="response-title">Filter Results</div>
+                        <div id="filterContent" class="response-content"></div>
+                    </div>
+                </div>
+
+                <div class="card rotate">
+                    <h2>Rotate</h2>
+                    <p>Rotate image</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="rotateFile" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Angle: <span id="angleValue">45</span>°</label>
+                        <input type="range" id="rotateAngle" min="-360" max="360" value="45" oninput="updateAngle(this.value)">
+                    </div>
+
+                    <button onclick="rotateImage()">Rotate</button>
+
+                    <div class="loading" id="rotatingLoading">
+                        <div class="spinner"></div> Rotating...
+                    </div>
+
+                    <div class="response" id="rotateResponse">
+                        <div class="response-title">Rotate Results</div>
+                        <div id="rotateContent" class="response-content"></div>
+                    </div>
+                </div>
+
+                <div class="card flip">
+                    <h2>Flip</h2>
+                    <p>Mirror image</p>
+                    
+                    <div class="form-group">
+                        <label>Select Image:</label>
+                        <input type="file" id="flipFile" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Direction:</label>
+                        <select id="flipDirection">
+                            <option value="horizontal">Horizontal</option>
+                            <option value="vertical">Vertical</option>
+                        </select>
+                    </div>
+
+                    <button onclick="flipImage()">Flip</button>
+
+                    <div class="loading" id="flippingLoading">
+                        <div class="spinner"></div> Flipping...
+                    </div>
+
+                    <div class="response" id="flipResponse">
+                        <div class="response-title">Flip Results</div>
+                        <div id="flipContent" class="response-content"></div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Batch Analyze Card -->
-            <div class="card full-width">
-                <h2>📦 Batch Analyze Images</h2>
-                <p style="color: #666; margin-bottom: 15px;">Analyze multiple images at once (max 10)</p>
-                
-                <div class="form-group">
-                    <label for="batchFiles">Select Images:</label>
-                    <input type="file" id="batchFiles" accept="image/*" multiple>
-                </div>
+        <!-- Batch Tab -->
+        <div id="batch" class="tab-content">
+            <div class="main-grid">
+                <div class="card" style="grid-column: 1 / -1; border-top: 5px solid #ff6b6b;">
+                    <h2 style="color: #ff6b6b;">Batch Analyze</h2>
+                    <p>Process multiple images (max 10)</p>
+                    
+                    <div class="form-group">
+                        <label>Select Images:</label>
+                        <input type="file" id="batchFiles" accept="image/*" multiple>
+                    </div>
 
-                <button onclick="batchAnalyze()">🔄 Batch Analyze</button>
+                    <button onclick="batchAnalyze()">Batch Analyze</button>
 
-                <div class="loading" id="batchLoading">
-                    <div class="spinner"></div> Processing...
-                </div>
+                    <div class="loading" id="batchLoading">
+                        <div class="spinner"></div> Processing...
+                    </div>
 
-                <div class="response" id="batchResponse">
-                    <div class="response-title">Batch Results</div>
-                    <div id="batchContent" class="response-content"></div>
+                    <div class="response" id="batchResponse">
+                        <div class="response-title">Batch Results</div>
+                        <div id="batchContent" class="response-content"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -335,190 +614,294 @@
     <script>
         const API_URL = "http://localhost:8000";
 
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateAngle(value) {
+            document.getElementById('angleValue').textContent = value;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const radios = document.querySelectorAll('input[name="resize-mode"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const fixedInputs = document.getElementById('fixed-inputs');
+                    const percentageInput = document.getElementById('resizePercentage');
+                    if (this.value === 'fixed') {
+                        fixedInputs.style.display = 'grid';
+                        percentageInput.style.display = 'none';
+                    } else {
+                        fixedInputs.style.display = 'none';
+                        percentageInput.style.display = 'block';
+                    }
+                });
+            });
+        });
+
+        async function sendRequest(endpoint, file, params = '') {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_URL}${endpoint}${params}`, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                });
+
+                return await response.json();
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        function createDownloadButton(url, filename) {
+            const btn = document.createElement('button');
+            btn.className = 'download-btn';
+            btn.innerHTML = '⬇️ Download Image';
+            btn.onclick = function() {
+                const link = document.createElement('a');
+                link.href = `${API_URL}${url}`;
+                link.setAttribute('download', filename || url.split('/').pop());
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            return btn;
+        }
+
         async function analyzeImage() {
             const file = document.getElementById('analyzeFile').files[0];
-            if (!file) {
-                alert('Please select an image');
-                return;
-            }
-
+            if (!file) return alert('Select image');
+            
             const loading = document.getElementById('analyzingLoading');
             const response = document.getElementById('analyzeResponse');
             const content = document.getElementById('analyzeContent');
 
             loading.style.display = 'block';
-            response.classList.remove('show');
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const result = await fetch(`${API_URL}/analyze`, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'cors'
-                });
-
-                const data = await result.json();
-
-                if (result.ok) {
-                    const analysis = data.analysis;
-                    content.innerHTML = `
-<strong>File:</strong> ${data.filename}
-<strong>Timestamp:</strong> ${data.timestamp}
-
-<div class="metric">
-    <div class="metric-item">
-        <div class="metric-label">Blur Score</div>
-        <div class="metric-value">${analysis.blur_score.toFixed(2)}</div>
-    </div>
-    <div class="metric-item">
-        <div class="metric-label">Brightness</div>
-        <div class="metric-value">${analysis.brightness.toFixed(2)}%</div>
-    </div>
-    <div class="metric-item">
-        <div class="metric-label">Contrast</div>
-        <div class="metric-value">${analysis.contrast.toFixed(2)}</div>
-    </div>
-    <div class="metric-item">
-        <div class="metric-label">Objects</div>
-        <div class="metric-value">${analysis.object_count}</div>
-    </div>
-</div>
-
-<strong>Quality Rating:</strong> ${analysis.quality_rating}
-
-<strong>Recommendations:</strong>
-${data.recommendations.map(r => `• ${r}`).join('\n')}
-                    `;
-                    response.classList.add('success', 'show');
-                } else {
-                    content.innerHTML = `Error: ${data.detail}`;
-                    response.classList.add('error', 'show');
-                }
-            } catch (error) {
-                content.innerHTML = `Error: ${error.message}\n\nMake sure API is running on http://localhost:8000`;
-                response.classList.add('error', 'show');
-            }
-
+            const data = await sendRequest('/analyze', file);
             loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+                response.classList.remove('success');
+            } else if (data.analysis) {
+                const a = data.analysis;
+                content.textContent = `File: ${data.filename}\nQuality: ${a.quality_rating}\nBlur: ${a.blur_score.toFixed(2)}\nBrightness: ${a.brightness.toFixed(2)}%\nContrast: ${a.contrast.toFixed(2)}\nObjects: ${a.object_count}\n\nRecommendations:\n${data.recommendations.join('\n')}`;
+                response.classList.add('success');
+                response.classList.remove('error');
+            }
+            response.classList.add('show');
         }
 
         async function enhanceImage() {
             const file = document.getElementById('enhanceFile').files[0];
-            if (!file) {
-                alert('Please select an image');
-                return;
-            }
-
+            if (!file) return alert('Select image');
+            
             const loading = document.getElementById('enhancingLoading');
             const response = document.getElementById('enhanceResponse');
             const content = document.getElementById('enhanceContent');
 
             loading.style.display = 'block';
-            response.classList.remove('show');
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const result = await fetch(`${API_URL}/enhance`, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'cors'
-                });
-
-                const data = await result.json();
-
-                if (result.ok) {
-                    const original = data.original_metrics;
-                    const enhanced = data.enhanced_metrics;
-                    const improvements = data.improvements;
-
-                    content.innerHTML = `
-<strong>File:</strong> ${data.filename}
-<strong>Download:</strong> <a href="${API_URL}${data.download_url}" target="_blank">${data.download_url}</a>
-
-<strong>Original Metrics:</strong>
-  Blur: ${original.blur_score.toFixed(2)}
-  Brightness: ${original.brightness.toFixed(2)}%
-  Contrast: ${original.contrast.toFixed(2)}
-
-<strong>Enhanced Metrics:</strong>
-  Blur: ${enhanced.blur_score.toFixed(2)}
-  Brightness: ${enhanced.brightness.toFixed(2)}%
-  Contrast: ${enhanced.contrast.toFixed(2)}
-
-<strong>Improvements:</strong>
-  Blur: ${improvements.blur_improvement > 0 ? '+' : ''}${improvements.blur_improvement.toFixed(2)}
-  Brightness: ${improvements.brightness_improvement > 0 ? '+' : ''}${improvements.brightness_improvement.toFixed(2)}%
-  Contrast: ${improvements.contrast_improvement > 0 ? '+' : ''}${improvements.contrast_improvement.toFixed(2)}
-                    `;
-                    response.classList.add('success', 'show');
-                } else {
-                    content.innerHTML = `Error: ${data.detail}`;
-                    response.classList.add('error', 'show');
-                }
-            } catch (error) {
-                content.innerHTML = `Error: ${error.message}\n\nMake sure API is running on http://localhost:8000`;
-                response.classList.add('error', 'show');
-            }
-
+            const data = await sendRequest('/enhance', file);
             loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.original_metrics) {
+                const orig = data.original_metrics;
+                const enh = data.enhanced_metrics;
+                const imp = data.improvements;
+                content.textContent = `Original:\n  Blur: ${orig.blur_score}\n  Brightness: ${orig.brightness}%\n  Contrast: ${orig.contrast}\n\nEnhanced:\n  Blur: ${enh.blur_score}\n  Brightness: ${enh.brightness}%\n  Contrast: ${enh.contrast}\n\nImprovements:\n  Blur: ${imp.blur_improvement}\n  Brightness: ${imp.brightness_improvement}%\n  Contrast: ${imp.contrast_improvement}`;
+                content.appendChild(createDownloadButton(data.download_url, 'enhanced_image.jpg'));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
+        }
+
+        async function resizeImage() {
+            const file = document.getElementById('resizeFile').files[0];
+            if (!file) return alert('Select image');
+            
+            const mode = document.querySelector('input[name="resize-mode"]:checked').value;
+            let params = '?';
+            if (mode === 'fixed') {
+                const w = document.getElementById('resizeWidth').value;
+                const h = document.getElementById('resizeHeight').value;
+                params = `?width=${w}&height=${h}`;
+            } else {
+                const p = document.getElementById('resizePercentage').value;
+                params = `?percentage=${p}`;
+            }
+            
+            const loading = document.getElementById('resizingLoading');
+            const response = document.getElementById('resizeResponse');
+            const content = document.getElementById('resizeContent');
+
+            loading.style.display = 'block';
+            const data = await sendRequest('/resize', file, params);
+            loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.new_size) {
+                content.textContent = `Original: ${data.original_size.width}x${data.original_size.height}\nNew: ${data.new_size.width}x${data.new_size.height}`;
+                content.appendChild(createDownloadButton(data.download_url, 'resized_image.jpg'));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
+        }
+
+        async function cropImage() {
+            const file = document.getElementById('cropFile').files[0];
+            if (!file) return alert('Select image');
+            
+            const x = document.getElementById('cropX').value;
+            const y = document.getElementById('cropY').value;
+            const w = document.getElementById('cropWidth').value;
+            const h = document.getElementById('cropHeight').value;
+            
+            const loading = document.getElementById('croppingLoading');
+            const response = document.getElementById('cropResponse');
+            const content = document.getElementById('cropContent');
+
+            loading.style.display = 'block';
+            const data = await sendRequest('/crop', file, `?x=${x}&y=${y}&width=${w}&height=${h}`);
+            loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.crop_region) {
+                content.textContent = `Cropped: ${data.cropped_size.width}x${data.cropped_size.height}\nRegion: x=${x}, y=${y}, w=${w}, h=${h}`;
+                content.appendChild(createDownloadButton(data.download_url, 'cropped_image.jpg'));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
+        }
+
+        async function applyFilter() {
+            const file = document.getElementById('filterFile').files[0];
+            if (!file) return alert('Select image');
+            
+            const filter = document.getElementById('filterType').value;
+            
+            const loading = document.getElementById('filteringLoading');
+            const response = document.getElementById('filterResponse');
+            const content = document.getElementById('filterContent');
+
+            loading.style.display = 'block';
+            const data = await sendRequest('/filter', file, `?filter_type=${filter}`);
+            loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.filter_applied) {
+                content.textContent = `Filter Applied: ${data.filter_applied}`;
+                content.appendChild(createDownloadButton(data.download_url, `${filter}_image.jpg`));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
+        }
+
+        async function rotateImage() {
+            const file = document.getElementById('rotateFile').files[0];
+            if (!file) return alert('Select image');
+            
+            const angle = document.getElementById('rotateAngle').value;
+            
+            const loading = document.getElementById('rotatingLoading');
+            const response = document.getElementById('rotateResponse');
+            const content = document.getElementById('rotateContent');
+
+            loading.style.display = 'block';
+            const data = await sendRequest('/rotate', file, `?angle=${angle}`);
+            loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.rotation_angle !== undefined) {
+                content.textContent = `Angle: ${data.rotation_angle}°`;
+                content.appendChild(createDownloadButton(data.download_url, 'rotated_image.jpg'));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
+        }
+
+        async function flipImage() {
+            const file = document.getElementById('flipFile').files[0];
+            if (!file) return alert('Select image');
+            
+            const direction = document.getElementById('flipDirection').value;
+            
+            const loading = document.getElementById('flippingLoading');
+            const response = document.getElementById('flipResponse');
+            const content = document.getElementById('flipContent');
+
+            loading.style.display = 'block';
+            const data = await sendRequest('/flip', file, `?direction=${direction}`);
+            loading.style.display = 'none';
+
+            if (data.error) {
+                content.textContent = `Error: ${data.error}`;
+                response.classList.add('error');
+            } else if (data.flip_direction) {
+                content.textContent = `Flipped: ${data.flip_direction}`;
+                content.appendChild(createDownloadButton(data.download_url, `flipped_${direction}_image.jpg`));
+                response.classList.add('success');
+            }
+            response.classList.add('show');
         }
 
         async function batchAnalyze() {
             const files = document.getElementById('batchFiles').files;
-            if (files.length === 0) {
-                alert('Please select images');
-                return;
-            }
-
-            if (files.length > 10) {
-                alert('Maximum 10 images allowed');
-                return;
-            }
-
+            if (files.length === 0) return alert('Select images');
+            if (files.length > 10) return alert('Max 10 images');
+            
             const loading = document.getElementById('batchLoading');
             const response = document.getElementById('batchResponse');
             const content = document.getElementById('batchContent');
 
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+            }
+
             loading.style.display = 'block';
-            response.classList.remove('show');
-
             try {
-                const formData = new FormData();
-                for (let file of files) {
-                    formData.append('files', file);
-                }
-
                 const result = await fetch(`${API_URL}/batch-analyze`, {
                     method: 'POST',
                     body: formData,
                     mode: 'cors'
                 });
-
                 const data = await result.json();
-
+                
                 if (result.ok) {
-                    let html = `Total Processed: ${data.total_processed}\nTotal Errors: ${data.total_errors}\n\n`;
-                    
+                    let html = `Processed: ${data.total_processed}\nErrors: ${data.total_errors}\n\n`;
                     data.results.forEach(r => {
-                        html += `Image ${r.index + 1}: ${r.filename}\n  Rating: ${r.quality_rating} | Blur: ${r.blur_score.toFixed(2)} | Brightness: ${r.brightness.toFixed(2)}%\n\n`;
+                        html += `${r.filename}: ${r.quality_rating} | Blur: ${r.blur_score} | Brightness: ${r.brightness}%\n`;
                     });
-
-                    content.innerHTML = html;
-                    response.classList.add('success', 'show');
+                    content.textContent = html;
+                    response.classList.add('success');
                 } else {
-                    content.innerHTML = `Error: ${data.detail}`;
-                    response.classList.add('error', 'show');
+                    content.textContent = `Error: ${data.detail}`;
+                    response.classList.add('error');
                 }
             } catch (error) {
-                content.innerHTML = `Error: ${error.message}\n\nMake sure API is running on http://localhost:8000`;
-                response.classList.add('error', 'show');
+                content.textContent = `Error: ${error.message}`;
+                response.classList.add('error');
             }
-
             loading.style.display = 'none';
+            response.classList.add('show');
         }
     </script>
 </body>
