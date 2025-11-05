@@ -2,9 +2,9 @@ name: Image Processing API - Full CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master, develop, main ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ master, develop, main ]
 
 jobs:
   # ----------------- 1️⃣ TEST -----------------
@@ -33,12 +33,20 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
+          echo "✅ Coverage reports generated at htmlcov/ and coverage.xml"
 
-      - name: Upload coverage report
+      - name: Upload XML coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
           path: htmlcov/
+          retention-days: 5
 
   # ----------------- 2️⃣ LINT -----------------
   lint:
@@ -135,7 +143,7 @@ jobs:
     name: Simulated Deployment
     needs: [security]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout code
