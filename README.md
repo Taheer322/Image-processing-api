@@ -236,29 +236,43 @@ curl -X POST "http://localhost:8000/flip?direction=horizontal" \
 ## Project Structure
 
 ```
-image-processing-api/
-├── main.py                    # API application (500+ lines)
-├── requirements.txt           # Python dependencies
-├── pytest.ini                 # Test configuration
-├── README.md                  # This file
-├── api_tester.html            # Web UI tester
-│
-├── .github/workflows/
-│   └── ci-cd.yml              # GitHub Actions workflow
-│
+.
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+├── .gitignore
+├── .pytest_cache/
+├── .venv/
+├── CACHEDIR.TAG
+├── README.md
+├── .coverage
+├── .env.example
+├── config/
+│   ├── __init__.py
+│   └── settings.py
+├── htmlcov/
+├── main.py
+├── pytest.ini
+├── requirements.txt
+├── setup.py
+├── src/
+│   ├── __init__.py
+│   ├── analyzer.py
+│   ├── models.py
+│   └── utils.py
 ├── tests/
 │   ├── __init__.py
-│   ├── conftest.py            # Test fixtures (50+ lines)
-│   ├── test_analyzer.py       # Unit tests (15 tests)
-│   ├── test_endpoints.py      # Integration tests (11 tests)
-│   ├── test_edge_cases.py     # Edge case tests (5 tests)
-│   └── test_transformations.py # Transformation tests (14+ tests)
-│
-├── uploads/                   # Generated processed images
-│   ├── .gitkeep
-│   └── .gitignore
-│
-└── htmlcov/                   # Coverage report (generated)
+│   ├── __pycache__/
+│   ├── api_tester.html
+│   ├── conftest.py
+│   ├── fixtures/
+│   ├── test_analyzer.py
+│   ├── test_edge_cases.py
+│   ├── test_endpoints.py
+│   ├── test_main.py
+│   └── test_transformations.py
+├── uploads/
+└── v/
 ```
 
 ## Testing

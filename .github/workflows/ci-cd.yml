@@ -32,9 +32,14 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=. --cov-report=xml:coverage-${{ matrix.python-version }}.xml --cov-report=html:htmlcov-${{ matrix.python-version }} tests/
-
+          pytest --cov=main --cov=src \
+                 --cov-report=xml:coverage-${{ matrix.python-version }}.xml \
+                 --cov-report=html:htmlcov-${{ matrix.python-version }}/ \
+                 tests/
           echo "✅ Coverage reports generated for Python ${{ matrix.python-version }}"
+
+      - name: Debug - list files
+        run: ls -R
 
       - name: Upload XML coverage report
         uses: actions/upload-artifact@v4
@@ -74,7 +79,7 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint main.py --fail-under=7.0 --exit-zero || true
+          pylint main.py src config --fail-under=7.0 --exit-zero || true
 
   # ----------------- 3️⃣ BUILD -----------------
   build:
@@ -103,7 +108,7 @@ jobs:
         run: |
           mkdir -p build
           cp main.py requirements.txt setup.py build/
-          cp -r src tests config build/ || true
+          cp -r src config tests uploads build/ || true
           echo "Build successful on $(date)" > build/BUILD_INFO.txt
 
       - name: Upload build artifact
@@ -136,7 +141,7 @@ jobs:
 
       - name: Run static security analysis
         run: |
-          bandit -r src -ll || true
+          bandit -r src main.py config -ll || true
 
   # ----------------- 5️⃣ DEPLOY -----------------
   deploy:
