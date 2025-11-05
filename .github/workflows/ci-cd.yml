@@ -1,4 +1,4 @@
-name: Image Processing API - CI/CD Pipeline
+name: Image Processing API - Full CI/CD Pipeline
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  # ----------------- 1️⃣ TEST -----------------
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -15,115 +16,139 @@ jobs:
         python-version: ['3.9', '3.10', '3.11']
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libsm6 libxext6 libxrender-dev
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
 
-    - name: Cache pip packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-asyncio
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
 
-    - name: Run tests with coverage
-      run: |
-        pytest tests/ -v --cov=. --cov-report=xml --cov-report=html --tb=short
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        fail_ci_if_error: false
-
+  # ----------------- 2️⃣ LINT -----------------
   lint:
     name: Code Quality Check
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install linting tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pylint
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pylint
 
-    - name: Run flake8 lint
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+      - name: Run flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Run pylint
-      run: |
-        pylint main.py --fail-under=7.0 --exit-zero || true
+      - name: Run pylint
+        run: |
+          pylint main.py --fail-under=7.0 --exit-zero || true
 
+  # ----------------- 3️⃣ BUILD -----------------
   build:
     name: Build & Verify
     needs: [test, lint]
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libsm6 libxext6 libxrender-dev
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Verify API imports
+        run: |
+          python -c "from main import app; print('✓ API imports successfully')"
 
-    - name: Verify API imports
-      run: |
-        python -c "from main import app, ImageAnalyzer; print('✓ API imports successfully')"
+      - name: Create build artifact
+        run: |
+          mkdir -p build
+          cp main.py requirements.txt setup.py build/
+          cp -r src tests config build/ || true
+          echo "Build successful on $(date)" > build/BUILD_INFO.txt
 
-    - name: Create build artifact
-      run: |
-        mkdir -p build
-        cp main.py build/
-        cp requirements.txt build/
-        cp -r tests build/ || true
-        echo "Build successful on $(date)" > build/BUILD_INFO.txt
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-build-${{ github.run_number }}
+          path: build/
 
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: api-build-${{ github.run_number }}
-        path: build/
-        retention-days: 7
+  # ----------------- 4️⃣ SECURITY -----------------
+  security:
+    name: Security Scan
+    needs: [build]
+    runs-on: ubuntu-latest
 
-    - name: Print build summary
-      run: |
-        echo "✅ Tests passed"
-        echo "✅ Code quality checked"
-        echo "✅ Build successful"
-        echo "✅ Ready for deployment"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install security tools
+        run: |
+          pip install safety bandit
+
+      - name: Run dependency vulnerability check
+        run: |
+          safety check --full-report || true
+
+      - name: Run static security analysis
+        run: |
+          bandit -r src -ll || true
+
+  # ----------------- 5️⃣ DEPLOY -----------------
+  deploy:
+    name: Simulated Deployment
+    needs: [security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-build-${{ github.run_number }}
+          path: build/
+
+      - name: Simulate deployment
+        run: |
+          echo "🚀 Starting deployment simulation..."
+          ls build/
+          echo "✅ Build deployed successfully on $(date)"
