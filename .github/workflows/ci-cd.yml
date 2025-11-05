@@ -38,13 +38,13 @@ jobs:
       - name: Upload XML coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
+          name: coverage-xml-${{ matrix.python-version }}
           path: coverage.xml
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html
+          name: coverage-html-${{ matrix.python-version }}
           path: htmlcov/
           retention-days: 5
 
@@ -116,7 +116,6 @@ jobs:
     name: Security Scan
     needs: [build]
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,7 +143,6 @@ jobs:
     needs: [security]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
