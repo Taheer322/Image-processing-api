@@ -32,20 +32,20 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
-          echo "✅ Coverage reports generated at htmlcov/ and coverage.xml"
+          pytest --cov=./src --cov-report=xml:coverage-${{ matrix.python-version }}.xml --cov-report=html:htmlcov-${{ matrix.python-version }} tests/
+          echo "✅ Coverage reports generated for Python ${{ matrix.python-version }}"
 
       - name: Upload XML coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml-${{ matrix.python-version }}
-          path: coverage.xml
+          path: coverage-${{ matrix.python-version }}.xml
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html-${{ matrix.python-version }}
-          path: htmlcov/
+          path: htmlcov-${{ matrix.python-version }}/
           retention-days: 5
 
   # ----------------- 2️⃣ LINT -----------------
