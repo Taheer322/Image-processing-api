@@ -6,7 +6,6 @@ from PIL import Image
 import sys
 from pathlib import Path
 #importing all the src modules
-import main
 import src.analyzer
 import src.models
 import src.utils
