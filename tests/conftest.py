@@ -5,6 +5,11 @@ from io import BytesIO
 from PIL import Image
 import sys
 from pathlib import Path
+#importing all the src modules
+import main
+import src.analyzer
+import src.models
+import src.utils
 
 # Add parent directory to path so we can import main.py
 sys.path.insert(0, str(Path(__file__).parent.parent))
